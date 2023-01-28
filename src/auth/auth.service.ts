@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { LoginInput, SignupInput } from './dto/inputs';
 import { AuthResponse } from './types';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,16 @@ export class AuthService {
     const token = this.getJwt(user.id);
 
     return { jwt: token, user };
+  }
+
+  async validateUser(id: string): Promise<User> {
+    const user = await this.usersService.findOne(id);
+    if (!user.isActive)
+      throw new UnauthorizedException('User is inactive, talk with an admin');
+
+    delete user.password;
+
+    return user;
   }
 
   private getJwt(id: string) {
