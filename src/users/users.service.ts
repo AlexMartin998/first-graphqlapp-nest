@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 
 import { SignupInput } from '../auth/dto/inputs';
 import { User } from './entities/user.entity';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
@@ -37,8 +38,16 @@ export class UsersService {
     return [];
   }
 
-  async findOne(id: string): Promise<User> {
-    throw new Error('not implemented');
+  async findOneByEmail(email: string): Promise<User> {
+    try {
+      return await this.userRepository.findOneByOrFail({ email });
+    } catch (error) {
+      throw new NotFoundException(`${email} not found`);
+      // this.handleDBErrors({
+      //   code: 'err-001',
+      //   detail: `Email '${email}' not found`,
+      // });
+    }
   }
 
   async block(id: string): Promise<User> {
@@ -48,6 +57,8 @@ export class UsersService {
   private handleDBErrors(error: any): never {
     if (error.code === '23505')
       throw new BadRequestException(error.detail.replace('Key ', ''));
+
+    if (error.code === 'err-001') throw new NotFoundException(error.detail);
 
     this.logger.error(error);
     throw new InternalServerErrorException('Please check server logs');

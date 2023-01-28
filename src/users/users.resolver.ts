@@ -14,11 +14,17 @@ export class UsersResolver {
   }
 
   @Query(() => User, { name: 'user' })
-  findOne(
-    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+  findOneByEmail(
+    @Args('email', { type: () => String }) email: string,
   ): Promise<User> {
-    return this.usersService.findOne(id);
+    return this.usersService.findOneByEmail(email);
   }
+  // @Query(() => User, { name: 'user' })
+  // findOne(
+  //   @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+  // ): Promise<User> {
+  //   return this.usersService.findOne(id);
+  // }
 
   @Mutation(() => User)
   blockUser(
