@@ -16,7 +16,7 @@ export class Item {
   @Field(() => Float)
   quantity: number;
 
-  @Column()
-  @Field()
-  quantityUnits: string;
+  @Column({ nullable: true, default: 'units' })
+  @Field({ nullable: true })
+  quantityUnits?: string;
 }
