@@ -16,6 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<User> {
-    return;
+    console.log({ payload });
+    throw new Error('Invalid token  :(');
   }
 }
