@@ -1,20 +1,24 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { LoginInput, SignupInput } from './dto/inputs';
 import { AuthResponse } from './types';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async signUp(signupInput: SignupInput): Promise<AuthResponse> {
     // create user
     const user = await this.usersService.create(signupInput);
 
     // create jwt
-    const token = 'adlnASDNO12';
+    const token = this.getJwt(user.id);
 
     return {
       jwt: token,
@@ -30,8 +34,13 @@ export class AuthService {
       );
 
     // create jwt
-    const token = 'sometoken';
+    const token = this.getJwt(user.id);
 
     return { jwt: token, user };
+  }
+
+  private getJwt(id: string) {
+    const token = this.jwtService.sign({ id });
+    return token;
   }
 }
