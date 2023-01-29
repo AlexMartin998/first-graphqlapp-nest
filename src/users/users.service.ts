@@ -37,6 +37,8 @@ export class UsersService {
 
   async findAll(roles: ValidRoles[]): Promise<User[]> {
     if (roles.length === 0) return this.userRepository.find();
+    // if (roles.length === 0)  // no necesario x el lazy
+    // return this.userRepository.find({ relations: { lastUdateBy: true } });
 
     // with roles
     return this.userRepository
@@ -65,9 +67,14 @@ export class UsersService {
     return user;
   }
 
-  async block(id: string): Promise<User> {
-    console.log(id);
-    throw new Error('not implemented');
+  async block(id: string, adminUser: User): Promise<User> {
+    const userToBlock = await this.findOne(id);
+    // if (!userToBlock.isActive)
+    //   throw new BadRequestException('User already blocked');
+    userToBlock.isActive = false;
+    userToBlock.lastUdateBy = adminUser;
+
+    return await this.userRepository.save(userToBlock);
   }
 
   private handleDBErrors(error: any): never {

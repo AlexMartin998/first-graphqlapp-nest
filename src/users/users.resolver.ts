@@ -38,7 +38,8 @@ export class UsersResolver {
   @Mutation(() => User, { name: 'blockUser' })
   blockUser(
     @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+    @GetAuthenticatedUser([ValidRoles.admin]) user: User, // authorization
   ): Promise<User> {
-    return this.usersService.block(id);
+    return this.usersService.block(id, user);
   }
 }

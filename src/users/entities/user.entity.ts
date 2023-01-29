@@ -1,5 +1,11 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 @ObjectType()
@@ -8,7 +14,7 @@ export class User {
   @Field(() => ID)
   id: string;
 
-  @Column()
+  @Column({ name: 'full_name' })
   @Field()
   fullName: string;
 
@@ -24,9 +30,17 @@ export class User {
   @Field(() => [String])
   roles: string[];
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
   @Field()
   isActive: boolean;
 
   // TODO: relations
+  // // @ManyToOne()  a la misma tabla
+  @ManyToOne(() => User, (user) => user.lastUdateBy, {
+    nullable: true,
+    lazy: true, // trnasforma en una promise - no eager xq es la misma tb
+  })
+  @JoinColumn({ name: 'last_update_by_user_id' })
+  @Field(() => User, { nullable: true })
+  lastUdateBy?: User;
 }
