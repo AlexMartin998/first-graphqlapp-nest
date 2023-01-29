@@ -26,14 +26,16 @@ export class UsersResolver {
   ): Promise<User> {
     return this.usersService.findOneByEmail(email);
   }
-  // @Query(() => User, { name: 'user' })
-  // findOne(
-  //   @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
-  // ): Promise<User> {
-  //   return this.usersService.findOne(id);
-  // }
 
-  @Mutation(() => User)
+  @Query(() => User, { name: 'user' })
+  findOne(
+    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+    @GetAuthenticatedUser([ValidRoles.admin]) _user: User, // authorization
+  ): Promise<User> {
+    return this.usersService.findOne(id);
+  }
+
+  @Mutation(() => User, { name: 'blockUser' })
   blockUser(
     @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
   ): Promise<User> {

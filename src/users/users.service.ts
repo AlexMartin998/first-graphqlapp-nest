@@ -66,6 +66,7 @@ export class UsersService {
   }
 
   async block(id: string): Promise<User> {
+    console.log(id);
     throw new Error('not implemented');
   }
 
