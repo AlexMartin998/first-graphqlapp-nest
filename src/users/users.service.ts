@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { SignupInput } from '../auth/dto/inputs';
 import { User } from './entities/user.entity';
 import { NotFoundException } from '@nestjs/common';
+import { ValidRoles } from '../auth/enums';
 
 @Injectable()
 export class UsersService {
@@ -34,8 +35,15 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    return [];
+  async findAll(roles: ValidRoles[]): Promise<User[]> {
+    if (roles.length === 0) return this.userRepository.find();
+
+    // with roles
+    return this.userRepository
+      .createQueryBuilder()
+      .andWhere('ARRAY[roles] && ARRAY[:...roles]')
+      .setParameter('roles', roles)
+      .getMany();
   }
 
   async findOneByEmail(email: string): Promise<User> {

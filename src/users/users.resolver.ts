@@ -1,16 +1,23 @@
-import { Args, Int, Mutation, Query, Resolver, ID } from '@nestjs/graphql';
-import { UpdateUserInput } from './dto/update-user.input';
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
-import { ParseUUIDPipe } from '@nestjs/common';
+import { ValidRolesArgs } from './dto/args';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetAuthenticatedUser } from '../auth/decorators';
+import { ValidRoles } from '../auth/enums';
 
 @Resolver(() => User)
+@UseGuards(JwtAuthGuard) // authentication
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query(() => [User], { name: 'users' })
-  findAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  findAll(
+    @GetAuthenticatedUser([ValidRoles.admin]) _user: User, // authorization
+    @Args() validRoles: ValidRolesArgs,
+  ): Promise<User[]> {
+    return this.usersService.findAll(validRoles.roles);
   }
 
   @Query(() => User, { name: 'user' })
