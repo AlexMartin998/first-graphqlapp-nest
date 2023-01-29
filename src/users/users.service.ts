@@ -12,6 +12,7 @@ import { SignupInput } from '../auth/dto/inputs';
 import { User } from './entities/user.entity';
 import { NotFoundException } from '@nestjs/common';
 import { ValidRoles } from '../auth/enums';
+import { UpdateUserInput } from './dto/inputs';
 
 @Injectable()
 export class UsersService {
@@ -67,6 +68,27 @@ export class UsersService {
     return user;
   }
 
+  async update(
+    id: string,
+    updateUserInput: UpdateUserInput,
+    adminUser: User,
+  ): Promise<User> {
+    const user = await this.userRepository.preload({
+      id,
+      ...updateUserInput,
+    });
+    if (!user) throw new NotFoundException(`User with id '${id} not found`);
+    user.lastUdateBy = adminUser;
+    if (updateUserInput.password)
+      user.password = bcrypt.hashSync(updateUserInput.password, 10);
+
+    try {
+      return await this.userRepository.save(user);
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
   async block(id: string, adminUser: User): Promise<User> {
     const userToBlock = await this.findOne(id);
     // if (!userToBlock.isActive)
@@ -83,7 +105,7 @@ export class UsersService {
 
     if (error.code === 'err-001') throw new NotFoundException(error.detail);
 
-    this.logger.error(error);
+    console.log(error);
     throw new InternalServerErrorException('Please check server logs');
   }
 }
