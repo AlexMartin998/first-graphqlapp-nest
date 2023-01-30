@@ -21,13 +21,25 @@ export class ItemsService {
     return await this.itemsRepository.save(newItem);
   }
 
-  async findAll(): Promise<Item[]> {
+  async findAll(user: User): Promise<Item[]> {
     // TODO: add paging & filtering
-    return this.itemsRepository.find();
+    return this.itemsRepository.find({
+      where: {
+        owner: {
+          id: user.id,
+        },
+      },
+    });
   }
 
-  async findOne(id: string): Promise<Item> {
-    const item = await this.itemsRepository.findOneBy({ id });
+  async findOne(id: string, user: User): Promise<Item> {
+    // const item = await this.itemsRepository.findOne({
+    //   where: { id, owner: { id: user.id } },
+    // });
+    const item = await this.itemsRepository.findOneBy({
+      id,
+      owner: { id: user.id },
+    });
     if (!item) throw new NotFoundException(`Item with id: '${id}' not found`);
 
     return item;
@@ -43,10 +55,12 @@ export class ItemsService {
     return this.itemsRepository.save(item);
   }
 
-  async remove(id: string): Promise<Item> {
+  async remove(id: string, user: User): Promise<Item> {
     // TODO: soft delete
-    const item = await this.findOne(id);
+
+    const item = await this.findOne(id, user);
     await this.itemsRepository.remove(item);
+
     return { ...item, id };
   }
 }
