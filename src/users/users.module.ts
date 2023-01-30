@@ -10,6 +10,6 @@ import { ItemsModule } from '../items/items.module';
 
   providers: [UsersResolver, UsersService],
 
-  exports: [UsersService],
+  exports: [TypeOrmModule, UsersService],
 })
 export class UsersModule {}
