@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { EnvConfiguration } from './config/app.config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -18,7 +19,31 @@ import { AuthModule } from './auth/auth.module';
       isGlobal: true,
     }),
 
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    // proteger el GraphQLModule
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
+      driver: ApolloDriver,
+
+      imports: [AuthModule],
+      inject: [JwtService],
+
+      useFactory: async (jwtService: JwtService) => ({
+        debug: false,
+        playground: false,
+        plugins: [ApolloServerPluginLandingPageLocalDefault],
+        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+
+        context({ req }) {
+          // // // Solo si tenemos el  auth  tercializado
+          // const token = req.headers.authorization?.replace('Bearer ', '');
+          // if (!token) throw new Error('Token needed');
+          // const payload = jwtService.decode(token);
+          // if (!payload) throw new Error('Invalid token');
+        },
+      }),
+    }),
+
+    /* Sync config
+      GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
 
       debug: false,
@@ -26,7 +51,7 @@ import { AuthModule } from './auth/auth.module';
       plugins: [ApolloServerPluginLandingPageLocalDefault],
 
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-    }),
+    }), */
 
     TypeOrmModule.forRoot({
       type: 'postgres',
