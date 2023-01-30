@@ -46,7 +46,7 @@ export class User {
   @Field(() => User, { nullable: true })
   lastUdateBy?: User;
 
-  @OneToMany(() => Item, (item) => item.owner)
+  @OneToMany(() => Item, (item) => item.owner, { lazy: true }) // requiere pagin
   @Field(() => [Item])
   items: Item[];
 }
