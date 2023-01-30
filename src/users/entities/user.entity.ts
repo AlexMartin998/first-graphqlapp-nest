@@ -1,9 +1,11 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Item } from '../../items/entities/item.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -34,7 +36,7 @@ export class User {
   @Field()
   isActive: boolean;
 
-  // TODO: relations
+  // // //  relations
   // // @ManyToOne()  a la misma tabla
   @ManyToOne(() => User, (user) => user.lastUdateBy, {
     nullable: true,
@@ -43,4 +45,8 @@ export class User {
   @JoinColumn({ name: 'last_update_by_user_id' })
   @Field(() => User, { nullable: true })
   lastUdateBy?: User;
+
+  @OneToMany(() => Item, (item) => item.owner)
+  @Field(() => [Item])
+  items: Item[];
 }

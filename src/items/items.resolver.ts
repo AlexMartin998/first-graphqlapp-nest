@@ -1,18 +1,23 @@
-import { Resolver, Query, Mutation, Args, Int, ID } from '@nestjs/graphql';
-import { ItemsService } from './items.service';
-import { Item } from './entities/item.entity';
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { GetAuthenticatedUser } from '../auth/decorators/auth-user.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { User } from '../users/entities/user.entity';
 import { CreateItemInput, UpdateItemInput } from './dto/inputs';
-import { ParseUUIDPipe } from '@nestjs/common';
+import { Item } from './entities/item.entity';
+import { ItemsService } from './items.service';
 
 @Resolver(() => Item)
+@UseGuards(JwtAuthGuard) // authentication
 export class ItemsResolver {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Mutation(() => Item)
   async createItem(
     @Args('createItemInput') createItemInput: CreateItemInput,
+    @GetAuthenticatedUser() user: User,
   ): Promise<Item> {
-    return this.itemsService.create(createItemInput);
+    return this.itemsService.create(createItemInput, user);
   }
 
   @Query(() => [Item], { name: 'items' })
