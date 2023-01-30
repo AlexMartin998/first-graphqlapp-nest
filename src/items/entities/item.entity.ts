@@ -28,7 +28,7 @@ export class Item {
   @Field({ nullable: true })
   quantityUnits?: string;
 
-  @ManyToOne(() => User, (user) => user.items, { nullable: false }) // crea aqui la column
+  @ManyToOne(() => User, (user) => user.items, { nullable: false, lazy: true }) // crea aqui la column
   @Index('user_id_index')
   @JoinColumn({ name: 'user_id' })
   @Field(() => User)

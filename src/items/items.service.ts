@@ -42,11 +42,17 @@ export class ItemsService {
     });
     if (!item) throw new NotFoundException(`Item with id: '${id}' not found`);
 
+    // item.owner = user; // o desde la db: lazy=true
+
     return item;
   }
 
-  async update(id: string, updateItemInput: UpdateItemInput): Promise<Item> {
-    // const item = await this.findOne(id);
+  async update(
+    id: string,
+    updateItemInput: UpdateItemInput,
+    user: User,
+  ): Promise<Item> {
+    await this.findOne(id, user); // validaciones
 
     // si no vienen algunos campos, no los va a modificar
     const item = await this.itemsRepository.preload(updateItemInput);
