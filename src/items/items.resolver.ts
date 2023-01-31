@@ -26,8 +26,7 @@ export class ItemsResolver {
     @GetAuthenticatedUser() user: User,
     @Args() paginationArgs: PaginationArgs,
   ) {
-    console.log({ paginationArgs });
-    return this.itemsService.findAll(user);
+    return this.itemsService.findAll(user, paginationArgs);
   }
 
   @Query(() => Item, { name: 'item' })
