@@ -47,6 +47,6 @@ export class User {
   lastUdateBy?: User;
 
   @OneToMany(() => Item, (item) => item.owner, { lazy: true }) // requiere pagin
-  @Field(() => [Item])
+  // @Field(() => [Item]) // user graphql no tiene items
   items: Item[];
 }

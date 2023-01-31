@@ -12,6 +12,8 @@ import {
 import { GetAuthenticatedUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/enums';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PaginationArgs, SearchArgs } from '../common/dto/args';
+import { Item } from '../items/entities/item.entity';
 import { ItemsService } from '../items/items.service';
 import { ValidRolesArgs } from './dto/args';
 import { UpdateUserInput } from './dto/inputs';
@@ -65,11 +67,21 @@ export class UsersResolver {
     return this.usersService.block(id, user);
   }
 
-  @ResolveField(() => Int, { name: 'itemCount' })
+  @ResolveField(() => Int, { name: 'itemCount' }) // no es una Qeuery, solo accesible x user
   async itemCount(
     @GetAuthenticatedUser([ValidRoles.admin]) admin: User, // authorization
-    @Parent() user: User,
+    @Parent() user: User, // me dice q user estos iterando ese momento
   ): Promise<number> {
     return this.itemsService.itemCountByUser(user);
+  }
+
+  @ResolveField(() => [Item], { name: 'items' })
+  async getItemsByUser(
+    @GetAuthenticatedUser([ValidRoles.admin]) admin: User, // authorization
+    @Parent() user: User,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchArgs: SearchArgs,
+  ): Promise<Item[]> {
+    return this.itemsService.findAll(user, paginationArgs, searchArgs);
   }
 }
