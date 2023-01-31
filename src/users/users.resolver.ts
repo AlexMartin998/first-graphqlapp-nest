@@ -32,8 +32,14 @@ export class UsersResolver {
   findAll(
     @GetAuthenticatedUser([ValidRoles.admin]) _user: User, // authorization
     @Args() validRoles: ValidRolesArgs,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchArgs: SearchArgs,
   ): Promise<User[]> {
-    return this.usersService.findAll(validRoles.roles);
+    return this.usersService.findAll(
+      validRoles.roles,
+      paginationArgs,
+      searchArgs,
+    );
   }
 
   @Query(() => User, { name: 'user' })

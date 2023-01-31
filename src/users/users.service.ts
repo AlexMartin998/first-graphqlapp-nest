@@ -13,6 +13,7 @@ import { User } from './entities/user.entity';
 import { NotFoundException } from '@nestjs/common';
 import { ValidRoles } from '../auth/enums';
 import { UpdateUserInput } from './dto/inputs';
+import { PaginationArgs, SearchArgs } from '../common/dto/args';
 
 @Injectable()
 export class UsersService {
@@ -36,17 +37,38 @@ export class UsersService {
     }
   }
 
-  async findAll(roles: ValidRoles[]): Promise<User[]> {
-    if (roles.length === 0) return this.userRepository.find();
+  async findAll(
+    roles: ValidRoles[],
+    paginationArgs: PaginationArgs,
+    searchArgs: SearchArgs,
+  ): Promise<User[]> {
+    const { limit, offset } = paginationArgs;
+    const { search } = searchArgs;
+
+    // // Sin paging ni searching
+    // if (roles.length === 0) return await this.userRepository.find();
     // if (roles.length === 0)  // no necesario x el lazy
     // return this.userRepository.find({ relations: { lastUdateBy: true } });
 
-    // with roles
-    return this.userRepository
+    // paging
+    const queryBuilder = this.userRepository
       .createQueryBuilder()
-      .andWhere('ARRAY[roles] && ARRAY[:...roles]')
-      .setParameter('roles', roles)
-      .getMany();
+      .take(limit)
+      .skip(offset);
+
+    // with roles
+    if (roles.length !== 0)
+      queryBuilder
+        .andWhere('ARRAY[roles] && ARRAY[:...roles]')
+        .setParameter('roles', roles);
+
+    // searching
+    if (search)
+      queryBuilder.andWhere(`LOWER("full_name") like :name`, {
+        name: `%${search.toLowerCase()}%`,
+      });
+
+    return queryBuilder.getMany();
   }
 
   async findOneByEmail(email: string): Promise<User> {
@@ -91,8 +113,9 @@ export class UsersService {
 
   async block(id: string, adminUser: User): Promise<User> {
     const userToBlock = await this.findOne(id);
-    // if (!userToBlock.isActive)
-    //   throw new BadRequestException('User already blocked');
+    if (!userToBlock.isActive)
+      throw new BadRequestException('User already blocked');
+
     userToBlock.isActive = false;
     userToBlock.lastUdateBy = adminUser;
 
