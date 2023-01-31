@@ -13,7 +13,9 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+
+      // bloqua q pueda tener +@Args() x method - graphql ya se encarga de hacer estas validaciones
+      // forbidNonWhitelisted: true,
     }),
   );
 
